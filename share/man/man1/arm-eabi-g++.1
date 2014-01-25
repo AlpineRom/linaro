@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "GCC 1"
-.TH GCC 1 "2013-12-02" "gcc-4.8.3" "GNU"
+.TH GCC 1 "2014-01-06" "gcc-4.8.3" "GNU"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -190,7 +190,7 @@ in the following sections.
 \&\-pipe  \-pass\-exit\-codes  
 \&\-x\fR \fIlanguage\fR  \fB\-v  \-###  \-\-help\fR[\fB=\fR\fIclass\fR[\fB,...\fR]]  \fB\-\-target\-help  
 \&\-\-version \-wrapper @\fR\fIfile\fR \fB\-fplugin=\fR\fIfile\fR \fB\-fplugin\-arg\-\fR\fIname\fR\fB=\fR\fIarg\fR  
-\&\fB\-fdump\-ada\-spec\fR[\fB\-slim\fR] \fB\-fada\-spec\-parent=\fR\fIarg\fR \fB\-fdump\-go\-spec=\fR\fIfile\fR
+\&\fB\-fdump\-ada\-spec\fR[\fB\-slim\fR] \fB\-fada\-spec\-parent=\fR\fIunit\fR \fB\-fdump\-go\-spec=\fR\fIfile\fR
 .IP "\fIC Language Options\fR" 4
 .IX Item "C Language Options"
 \&\fB\-ansi  \-std=\fR\fIstandard\fR  \fB\-fgnu89\-inline 
@@ -250,7 +250,6 @@ in the following sections.
 .IX Item "Language Independent Options"
 \&\fB\-fmessage\-length=\fR\fIn\fR  
 \&\fB\-fdiagnostics\-show\-location=\fR[\fBonce\fR|\fBevery-line\fR]  
-\&\fB\-fdiagnostics\-color=\fR[\fBauto\fR|\fBnever\fR|\fBalways\fR]  
 \&\fB\-fno\-diagnostics\-show\-option \-fno\-diagnostics\-show\-caret\fR
 .IP "\fIWarning Options\fR" 4
 .IX Item "Warning Options"
@@ -894,7 +893,8 @@ See \s-1RS/6000\s0 and PowerPC Options.
 \&\-msmall\-exec  \-mno\-small\-exec  \-mmvcle \-mno\-mvcle 
 \&\-m64  \-m31  \-mdebug  \-mno\-debug  \-mesa  \-mzarch 
 \&\-mtpf\-trace \-mno\-tpf\-trace  \-mfused\-madd  \-mno\-fused\-madd 
-\&\-mwarn\-framesize  \-mwarn\-dynamicstack  \-mstack\-size \-mstack\-guard\fR
+\&\-mwarn\-framesize  \-mwarn\-dynamicstack  \-mstack\-size \-mstack\-guard 
+\&\-mhotpatch[=\fR\fIhalfwords\fR\fB] \-mno\-hotpatch\fR
 .Sp
 \&\fIScore Options\fR
 \&\fB\-meb \-mel 
@@ -1462,8 +1462,11 @@ Define an argument called \fIkey\fR with a value of \fIvalue\fR
 for the plugin called \fIname\fR.
 .IP "\fB\-fdump\-ada\-spec\fR[\fB\-slim\fR]" 4
 .IX Item "-fdump-ada-spec[-slim]"
-For C and \*(C+ source and include files, generate corresponding Ada
-specs.
+For C and \*(C+ source and include files, generate corresponding Ada specs.
+.IP "\fB\-fada\-spec\-parent=\fR\fIunit\fR" 4
+.IX Item "-fada-spec-parent=unit"
+In conjunction with \fB\-fdump\-ada\-spec\fR[\fB\-slim\fR] above, generate
+Ada specs as child units of parent \fIunit\fR.
 .IP "\fB\-fdump\-go\-spec=\fR\fIfile\fR" 4
 .IX Item "-fdump-go-spec=file"
 For input files in any language, generate corresponding Go
@@ -2792,79 +2795,6 @@ Only meaningful in line-wrapping mode.  Instructs the diagnostic
 messages reporter to emit the same source location information (as
 prefix) for physical lines that result from the process of breaking
 a message which is too long to fit on a single line.
-.IP "\fB\-fdiagnostics\-color[=\fR\fI\s-1WHEN\s0\fR\fB]\fR" 4
-.IX Item "-fdiagnostics-color[=WHEN]"
-.PD 0
-.IP "\fB\-fno\-diagnostics\-color\fR" 4
-.IX Item "-fno-diagnostics-color"
-.PD
-Use color in diagnostics.  \fI\s-1WHEN\s0\fR is \fBnever\fR, \fBalways\fR,
-or \fBauto\fR.  The default is \fBnever\fR if \fB\s-1GCC_COLORS\s0\fR environment
-variable isn't present in the environment, and \fBauto\fR otherwise.
-\&\fBauto\fR means to use color only when the standard error is a terminal.
-The forms \fB\-fdiagnostics\-color\fR and \fB\-fno\-diagnostics\-color\fR are
-aliases for \fB\-fdiagnostics\-color=always\fR and
-\&\fB\-fdiagnostics\-color=never\fR, respectively.
-.Sp
-The colors are defined by the environment variable \fB\s-1GCC_COLORS\s0\fR.
-Its value is a colon-separated list of capabilities and Select Graphic
-Rendition (\s-1SGR\s0) substrings. \s-1SGR\s0 commands are interpreted by the
-terminal or terminal emulator.  (See the section in the documentation
-of your text terminal for permitted values and their meanings as
-character attributes.)  These substring values are integers in decimal
-representation and can be concatenated with semicolons.
-Common values to concatenate include
-\&\fB1\fR for bold,
-\&\fB4\fR for underline,
-\&\fB5\fR for blink,
-\&\fB7\fR for inverse,
-\&\fB39\fR for default foreground color,
-\&\fB30\fR to \fB37\fR for foreground colors,
-\&\fB90\fR to \fB97\fR for 16\-color mode foreground colors,
-\&\fB38;5;0\fR to \fB38;5;255\fR
-for 88\-color and 256\-color modes foreground colors,
-\&\fB49\fR for default background color,
-\&\fB40\fR to \fB47\fR for background colors,
-\&\fB100\fR to \fB107\fR for 16\-color mode background colors,
-and \fB48;5;0\fR to \fB48;5;255\fR
-for 88\-color and 256\-color modes background colors.
-.Sp
-The default \fB\s-1GCC_COLORS\s0\fR is
-\&\fBerror=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01\fR
-where \fB01;31\fR is bold red, \fB01;35\fR is bold magenta,
-\&\fB01;36\fR is bold cyan, \fB01;32\fR is bold green and
-\&\fB01\fR is bold. Setting \fB\s-1GCC_COLORS\s0\fR to the empty
-string disables colors.
-Supported capabilities are as follows.
-.RS 4
-.ie n .IP """error=""" 4
-.el .IP "\f(CWerror=\fR" 4
-.IX Item "error="
-\&\s-1SGR\s0 substring for error: markers.
-.ie n .IP """warning=""" 4
-.el .IP "\f(CWwarning=\fR" 4
-.IX Item "warning="
-\&\s-1SGR\s0 substring for warning: markers.
-.ie n .IP """note=""" 4
-.el .IP "\f(CWnote=\fR" 4
-.IX Item "note="
-\&\s-1SGR\s0 substring for note: markers.
-.ie n .IP """caret=""" 4
-.el .IP "\f(CWcaret=\fR" 4
-.IX Item "caret="
-\&\s-1SGR\s0 substring for caret line.
-.ie n .IP """locus=""" 4
-.el .IP "\f(CWlocus=\fR" 4
-.IX Item "locus="
-\&\s-1SGR\s0 substring for location information, \fBfile:line\fR or
-\&\fBfile:line:column\fR etc.
-.ie n .IP """quote=""" 4
-.el .IP "\f(CWquote=\fR" 4
-.IX Item "quote="
-\&\s-1SGR\s0 substring for information printed within quotes.
-.RE
-.RS 4
-.RE
 .IP "\fB\-fno\-diagnostics\-show\-option\fR" 4
 .IX Item "-fno-diagnostics-show-option"
 By default, each diagnostic emitted includes text indicating the
@@ -17614,6 +17544,23 @@ values have to be exact powers of 2 and \fIstack-size\fR has to be greater than
 In order to be efficient the extra code makes the assumption that the stack starts
 at an address aligned to the value given by \fIstack-size\fR.
 The \fIstack-guard\fR option can only be used in conjunction with \fIstack-size\fR.
+.IP "\fB\-mhotpatch[=\fR\fIhalfwords\fR\fB]\fR" 4
+.IX Item "-mhotpatch[=halfwords]"
+.PD 0
+.IP "\fB\-mno\-hotpatch\fR" 4
+.IX Item "-mno-hotpatch"
+.PD
+If the hotpatch option is enabled, a \*(L"hot-patching\*(R" function
+prologue is generated for all functions in the compilation unit.
+The funtion label is prepended with the given number of two-byte
+Nop instructions (\fIhalfwords\fR, maximum 1000000) or 12 Nop
+instructions if no argument is present.  Functions with a
+hot-patching prologue are never inlined automatically, and a
+hot-patching prologue is never generated for functions functions
+that are explicitly inline.
+.Sp
+This option can be overridden for individual functions with the
+\&\f(CW\*(C`hotpatch\*(C'\fR attribute.
 .PP
 \fIScore Options\fR
 .IX Subsection "Score Options"
